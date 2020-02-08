@@ -140,15 +140,8 @@ pub struct Counter<T: Hash + Eq, N = usize> {
 impl<T, N> Counter<T, N>
 where
     T: Hash + Eq,
-    N: PartialOrd + AddAssign + SubAssign + Zero + One,
+    N: PartialOrd + AddAssign + Zero + One,
 {
-    /// Create a new, empty `Counter`
-    pub fn new() -> Counter<T, N> {
-        Counter {
-            map: HashMap::new(),
-        }
-    }
-
     /// Create a new `Counter` initialized with the given iterable
     pub fn init<I>(iterable: I) -> Counter<T, N>
     where
@@ -169,12 +162,13 @@ where
             *entry += N::one();
         }
     }
+}
 
-    /// Consumes this counter and returns a HashMap mapping the items to the counts.
-    pub fn into_map(self) -> HashMap<T, N> {
-        self.map
-    }
-
+impl<T, N> Counter<T, N>
+where
+    T: Hash + Eq,
+    N: PartialOrd + SubAssign + Zero + One,
+{
     /// Remove the counts of the elements from the given iterable to this counter
     ///
     /// Non-positive counts are automatically removed
@@ -203,6 +197,23 @@ where
                 self.map.remove(&item);
             }
         }
+    }
+}
+
+impl<T, N> Counter<T, N>
+where
+    T: Hash + Eq,
+{
+    /// Create a new, empty `Counter`
+    pub fn new() -> Counter<T, N> {
+        Counter {
+            map: HashMap::new(),
+        }
+    }
+    
+    /// Consumes this counter and returns a HashMap mapping the items to the counts.
+    pub fn into_map(self) -> HashMap<T, N> {
+        self.map
     }
 }
 
