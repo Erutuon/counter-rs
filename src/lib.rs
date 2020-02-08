@@ -158,7 +158,7 @@ where
         I: IntoIterator<Item = T>,
     {
         for item in iterable.into_iter() {
-            let entry = self.map.entry(item).or_insert(N::zero());
+            let entry = self.map.entry(item).or_insert_with(N::zero);
             *entry += N::one();
         }
     }
@@ -264,7 +264,7 @@ where
         items.sort_by(|&(ref a_item, ref a_count), &(ref b_item, ref b_count)| {
             match b_count.cmp(&a_count) {
                 Ordering::Equal => tiebreaker(&a_item, &b_item),
-                unequal @ _ => unequal,
+                unequal => unequal,
             }
         });
         items
@@ -314,7 +314,7 @@ where
     /// ```
     fn add_assign(&mut self, rhs: Self) {
         for (key, value) in rhs.map.iter() {
-            let entry = self.map.entry(key.clone()).or_insert(N::zero());
+            let entry = self.map.entry(key.clone()).or_insert_with(N::zero);
             *entry += value.clone();
         }
     }
@@ -343,7 +343,7 @@ where
     /// assert_eq!(e.into_map(), expect);
     /// ```
     fn add(self, rhs: Counter<T, N>) -> Self::Output {
-        let mut counter = self.clone();
+        let mut counter = self;
         counter += rhs;
         counter
     }
@@ -486,9 +486,9 @@ where
     fn bitor(self, rhs: Counter<T, N>) -> Self::Output {
         use std::cmp::max;
 
-        let mut counter = self.clone();
+        let mut counter = self;
         for (key, value) in rhs.map.iter() {
-            let entry = counter.map.entry(key.clone()).or_insert(N::zero());
+            let entry = counter.map.entry(key.clone()).or_insert_with(N::zero);
             *entry = max(&*entry, value).clone();
         }
         counter
@@ -608,7 +608,7 @@ where
     /// assert_eq!(e.into_map(), expect);
     /// ```
     fn sub(self, rhs: I) -> Self::Output {
-        let mut ctr = self.clone();
+        let mut ctr = self;
         ctr.subtract(rhs);
         ctr
     }
@@ -655,7 +655,7 @@ where
     fn from_iter<I: IntoIterator<Item = (T, N)>>(iter: I) -> Self {
         let mut cnt = Counter::new();
         for (item, item_count) in iter.into_iter() {
-            let entry = cnt.map.entry(item).or_insert(N::zero());
+            let entry = cnt.map.entry(item).or_insert_with(N::zero);
             *entry += item_count;
         }
         cnt
@@ -907,7 +907,7 @@ mod tests {
 
         impl Inty {
             pub fn new(i: usize) -> Inty {
-                Inty { i: i }
+                Inty { i }
             }
         }
 
